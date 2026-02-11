@@ -10,7 +10,7 @@ const brandLabel = document.getElementById("brand");
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-// Copy-only block
+// ===== Copy-only block
 const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
 const copyFlag = document.getElementById("copyFlag");
 const flagHelp = document.getElementById("flagHelp");
@@ -24,16 +24,20 @@ copyFlag.addEventListener("click", async () => {
   }
 });
 
-// Botones extra (sin t.me)
+// ===== Botones extra
 document.getElementById("update-button")?.addEventListener("click", () => {
-  window.open("https://pay.google.com/gp/w/u/0/home/paymentmethods", "_blank", "noopener,noreferrer");
+  window.open(
+    "https://poshmark.com/listing/635850d12b55c49b4a958b39/guest_buy?size=6",
+    "_blank",
+    "noopener,noreferrer"
+  );
 });
 
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
 
-// patrones
+// ===== Card patterns
 const cardPatterns = {
   visa: /^4/,
   mastercard: /^5[1-5]/,
@@ -62,7 +66,7 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-// NUM FORMATO (AMEX 4-6-5, resto 4-4-4-4)
+// ===== Number formatting (AMEX 4-6-5, others 4-4-4-4)
 numInput.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'').slice(0,19);
   const brand = detectBrand(raw);
@@ -85,7 +89,7 @@ numInput.addEventListener("input", (e)=>{
   displayNum.textContent = formatted || "#### #### #### ####";
 });
 
-// FECHA: acepta MM/AA o MM/AAAA y normaliza a MM/AA
+// ===== Expiration parsing
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
   if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
@@ -93,13 +97,11 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
-  // MM + YY
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
 
-  // MM + YYYY
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
   const yy = complete ? yyyy.slice(2,4) : null;
@@ -124,9 +126,7 @@ function isValidExp(mm, yy){
 dateInput.addEventListener("input",(e)=>{
   const p = parseAndFormatExp(e.target.value);
   e.target.value = p.display;
-
-  if (p.mm && p.yy) displayDate.textContent = p.mm + "/" + p.yy;
-  else displayDate.textContent = p.display || "MM/AA";
+  displayDate.textContent = (p.mm && p.yy) ? (p.mm + "/" + p.yy) : (p.display || "MM/AA");
 });
 
 dateInput.addEventListener("blur", ()=>{
@@ -137,7 +137,7 @@ dateInput.addEventListener("blur", ()=>{
   }
 });
 
-// SUBMIT: preventDefault + loading + reload
+// ===== Submit: countdown + reload
 form.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
@@ -173,3 +173,102 @@ form.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
+
+// =====================================================
+// =============== PIXEL RAIN BACKGROUND ===============
+// =====================================================
+(function pixelRain(){
+  const canvas = document.getElementById("pixelRain");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d", { alpha:true });
+
+  let W=0,H=0,dpr=1;
+  const pxSizeBase = 6; // tamaño pixel
+  const drops = [];
+  const maxDrops = 170; // densidad
+
+  function resize(){
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    W = canvas.width = Math.floor(window.innerWidth * dpr);
+    H = canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+  }
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+
+  function spawnDrop(){
+    const size = (pxSizeBase + Math.floor(Math.random()*5)) * dpr; // 6-10
+    return {
+      x: Math.floor(rand(0, W)),
+      y: Math.floor(rand(-H, 0)),
+      v: rand(1.2, 4.8) * dpr,
+      size,
+      alpha: rand(0.08, 0.22), // semi transparente
+      glow: rand(0.10, 0.25),
+      drift: rand(-0.25, 0.25) * dpr,
+      r: 255,
+      g: Math.floor(rand(30, 120)),
+      b: Math.floor(rand(70, 140)),
+      life: rand(0.6, 1.0),
+    };
+  }
+
+  function init(){
+    drops.length = 0;
+    for(let i=0;i<maxDrops;i++){
+      drops.push(spawnDrop());
+      drops[i].y = rand(0, H);
+    }
+  }
+
+  function step(){
+    // fade trail (matrix vibe)
+    ctx.fillStyle = `rgba(0,0,0,0.20)`;
+    ctx.fillRect(0,0,W,H);
+
+    for(const d of drops){
+      d.y += d.v;
+      d.x += d.drift;
+
+      // wrap
+      if(d.y > H + 40*dpr){
+        Object.assign(d, spawnDrop());
+      }
+      if(d.x < -40*dpr) d.x = W + 20*dpr;
+      if(d.x > W + 40*dpr) d.x = -20*dpr;
+
+      // glow pixel
+      ctx.shadowBlur = 18 * dpr * d.glow;
+      ctx.shadowColor = `rgba(${d.r},${d.g},${d.b},${Math.min(0.35, d.alpha*2)})`;
+
+      ctx.fillStyle = `rgba(${d.r},${d.g},${d.b},${d.alpha})`;
+      ctx.fillRect(
+        Math.floor(d.x / d.size) * d.size,
+        Math.floor(d.y / d.size) * d.size,
+        d.size,
+        d.size
+      );
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  resize();
+  init();
+  step();
+  window.addEventListener("resize", ()=>{
+    resize();
+    init();
+  });
+
+  // opcional: si el user prefiere menos motion, baja densidad
+  try{
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce){
+      // “apaga” la mayoría
+      drops.splice(0, Math.floor(drops.length*0.65));
+    }
+  }catch{}
+})();
