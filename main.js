@@ -1,3 +1,90 @@
+/* =========================
+   Pixel Rain (background)
+   ========================= */
+(() => {
+  const canvas = document.getElementById("pixelRain");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d", { alpha: true });
+  let w = 0, h = 0, dpr = 1;
+
+  const palette = [
+    "rgba(255,46,99,0.22)",
+    "rgba(255,90,122,0.18)",
+    "rgba(255,23,68,0.16)",
+    "rgba(255,46,99,0.10)"
+  ];
+
+  const state = {
+    cols: 0,
+    size: 10,
+    streams: []
+  };
+
+  function resize() {
+    dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    w = Math.floor(window.innerWidth);
+    h = Math.floor(window.innerHeight);
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // pixel size adapts a bit by screen width
+    state.size = w < 520 ? 9 : 10;
+
+    state.cols = Math.ceil(w / state.size);
+    state.streams = Array.from({ length: state.cols }, (_, i) => ({
+      x: i * state.size,
+      y: Math.random() * h,
+      speed: 1.2 + Math.random() * 2.6,
+      density: 0.35 + Math.random() * 0.55
+    }));
+  }
+
+  function tick() {
+    // fade layer
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(0, 0, w, h);
+
+    for (const s of state.streams) {
+      // draw a few pixels per column
+      const drops = 1 + Math.floor(3 * s.density);
+      for (let k = 0; k < drops; k++) {
+        const px = s.x + (Math.random() < 0.25 ? state.size : 0);
+        const py = s.y - k * (state.size * (1 + Math.random() * 2));
+        const sz = state.size * (0.65 + Math.random() * 0.55);
+
+        ctx.fillStyle = palette[(Math.random() * palette.length) | 0];
+        ctx.fillRect(px, py, sz * 0.55, sz);
+      }
+
+      s.y += s.speed * state.size * 0.35;
+
+      // respawn
+      if (s.y > h + 80) {
+        s.y = -Math.random() * 200;
+        s.speed = 1.2 + Math.random() * 2.6;
+        s.density = 0.35 + Math.random() * 0.55;
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+  // initial clear
+  ctx.clearRect(0, 0, w, h);
+  requestAnimationFrame(tick);
+})();
+
+
+/* =========================
+   Card + Form logic
+   ========================= */
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
 const dateInput = document.getElementById("cardDate");
@@ -10,12 +97,12 @@ const brandLabel = document.getElementById("brand");
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-// ===== Copy-only block
+// Copy-only block
 const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
 const copyFlag = document.getElementById("copyFlag");
 const flagHelp = document.getElementById("flagHelp");
 
-copyFlag.addEventListener("click", async () => {
+copyFlag?.addEventListener("click", async () => {
   try{
     await navigator.clipboard.writeText(FLAG_URL);
     flagHelp.textContent = "Copiado ✅ Pégalo en la barra de direcciones de Chrome y presiona Enter.";
@@ -24,7 +111,8 @@ copyFlag.addEventListener("click", async () => {
   }
 });
 
-// ===== Botones extra
+// Botones extra
+// ✅ Cambiado: “Actualizar dirección / checkout” -> link que diste
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
     "https://poshmark.com/listing/635850d12b55c49b4a958b39/guest_buy?size=6",
@@ -33,11 +121,12 @@ document.getElementById("update-button")?.addEventListener("click", () => {
   );
 });
 
+// Perfil GPay
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
 
-// ===== Card patterns
+// patrones
 const cardPatterns = {
   visa: /^4/,
   mastercard: /^5[1-5]/,
@@ -66,8 +155,8 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-// ===== Number formatting (AMEX 4-6-5, others 4-4-4-4)
-numInput.addEventListener("input", (e)=>{
+// NUM FORMATO (AMEX 4-6-5, resto 4-4-4-4)
+numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'').slice(0,19);
   const brand = detectBrand(raw);
   brandLabel.textContent = brand;
@@ -89,7 +178,7 @@ numInput.addEventListener("input", (e)=>{
   displayNum.textContent = formatted || "#### #### #### ####";
 });
 
-// ===== Expiration parsing
+// FECHA: acepta MM/AA o MM/AAAA y normaliza a MM/AA
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
   if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
@@ -97,11 +186,13 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
+  // MM + YY
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
 
+  // MM + YYYY
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
   const yy = complete ? yyyy.slice(2,4) : null;
@@ -123,13 +214,15 @@ function isValidExp(mm, yy){
   return true;
 }
 
-dateInput.addEventListener("input",(e)=>{
+dateInput?.addEventListener("input",(e)=>{
   const p = parseAndFormatExp(e.target.value);
   e.target.value = p.display;
-  displayDate.textContent = (p.mm && p.yy) ? (p.mm + "/" + p.yy) : (p.display || "MM/AA");
+
+  if (p.mm && p.yy) displayDate.textContent = p.mm + "/" + p.yy;
+  else displayDate.textContent = p.display || "MM/AA";
 });
 
-dateInput.addEventListener("blur", ()=>{
+dateInput?.addEventListener("blur", ()=>{
   const p = parseAndFormatExp(dateInput.value);
   if (p.mm && p.yy) {
     dateInput.value = p.mm + "/" + p.yy;
@@ -137,8 +230,8 @@ dateInput.addEventListener("blur", ()=>{
   }
 });
 
-// ===== Submit: countdown + reload
-form.addEventListener("submit",(e)=>{
+// SUBMIT: preventDefault + loading + reload
+form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
 
@@ -173,102 +266,3 @@ form.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
-
-
-// =====================================================
-// =============== PIXEL RAIN BACKGROUND ===============
-// =====================================================
-(function pixelRain(){
-  const canvas = document.getElementById("pixelRain");
-  if(!canvas) return;
-  const ctx = canvas.getContext("2d", { alpha:true });
-
-  let W=0,H=0,dpr=1;
-  const pxSizeBase = 6; // tamaño pixel
-  const drops = [];
-  const maxDrops = 170; // densidad
-
-  function resize(){
-    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    W = canvas.width = Math.floor(window.innerWidth * dpr);
-    H = canvas.height = Math.floor(window.innerHeight * dpr);
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-  }
-
-  function rand(min,max){ return Math.random()*(max-min)+min; }
-
-  function spawnDrop(){
-    const size = (pxSizeBase + Math.floor(Math.random()*5)) * dpr; // 6-10
-    return {
-      x: Math.floor(rand(0, W)),
-      y: Math.floor(rand(-H, 0)),
-      v: rand(1.2, 4.8) * dpr,
-      size,
-      alpha: rand(0.08, 0.22), // semi transparente
-      glow: rand(0.10, 0.25),
-      drift: rand(-0.25, 0.25) * dpr,
-      r: 255,
-      g: Math.floor(rand(30, 120)),
-      b: Math.floor(rand(70, 140)),
-      life: rand(0.6, 1.0),
-    };
-  }
-
-  function init(){
-    drops.length = 0;
-    for(let i=0;i<maxDrops;i++){
-      drops.push(spawnDrop());
-      drops[i].y = rand(0, H);
-    }
-  }
-
-  function step(){
-    // fade trail (matrix vibe)
-    ctx.fillStyle = `rgba(0,0,0,0.20)`;
-    ctx.fillRect(0,0,W,H);
-
-    for(const d of drops){
-      d.y += d.v;
-      d.x += d.drift;
-
-      // wrap
-      if(d.y > H + 40*dpr){
-        Object.assign(d, spawnDrop());
-      }
-      if(d.x < -40*dpr) d.x = W + 20*dpr;
-      if(d.x > W + 40*dpr) d.x = -20*dpr;
-
-      // glow pixel
-      ctx.shadowBlur = 18 * dpr * d.glow;
-      ctx.shadowColor = `rgba(${d.r},${d.g},${d.b},${Math.min(0.35, d.alpha*2)})`;
-
-      ctx.fillStyle = `rgba(${d.r},${d.g},${d.b},${d.alpha})`;
-      ctx.fillRect(
-        Math.floor(d.x / d.size) * d.size,
-        Math.floor(d.y / d.size) * d.size,
-        d.size,
-        d.size
-      );
-    }
-
-    requestAnimationFrame(step);
-  }
-
-  resize();
-  init();
-  step();
-  window.addEventListener("resize", ()=>{
-    resize();
-    init();
-  });
-
-  // opcional: si el user prefiere menos motion, baja densidad
-  try{
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if(reduce){
-      // “apaga” la mayoría
-      drops.splice(0, Math.floor(drops.length*0.65));
-    }
-  }catch{}
-})();
