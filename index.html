@@ -9,6 +9,9 @@
 </head>
 
 <body>
+  <!-- Pixel rain background -->
+  <canvas id="pixelRain" aria-hidden="true"></canvas>
+
   <div class="wrapper">
     <div class="shell">
       <div class="topbar">
@@ -87,11 +90,10 @@
             <div class="error" id="err"></div>
           </form>
 
-          <!-- ✅ NUEVOS BOTONES (bonitos + mobile) -->
           <div class="actions">
             <button type="button" class="actionBtn" id="update-button">
               Actualizar datos
-              <span class="hint">Métodos de pago</span>
+              <span class="hint">Actualizar dirección / checkout</span>
             </button>
 
             <button type="button" class="actionBtn outline" id="perfil-button">
@@ -101,7 +103,7 @@
           </div>
 
           <div class="note">
-            Se abrirán páginas oficiales de Google en una pestaña nueva.
+            Se abrirán páginas externas en una pestaña nueva.
           </div>
         </div>
       </div>
