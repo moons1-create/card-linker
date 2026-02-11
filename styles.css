@@ -1,104 +1,135 @@
 :root{
-  --bg:#070a16;
-  --panel:#0e1330;
-  --card:#12162e;
-  --neon:#6df0ff;
-  --violet:#7c5cff;
-  --text:#eef0ff;
-  --muted:#9aa3ff;
-  --error:#ff4d6d;
+  --bg:#07060b;
+  --panel:#0f0b12;
+  --card:#14111b;
+  --red:#ff2d55;
+  --red2:#ff0040;
+  --accent:#ff7a93;
+  --text:#f7f5ff;
+  --muted:#a6a1b4;
+  --error:#ff4040;
+  --line: rgba(255, 0, 80, .25);
 }
 
 *{box-sizing:border-box}
+html,body{height:100%}
+
 body{
   margin:0;
   min-height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:radial-gradient(circle at top,#1b2150,var(--bg));
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,0,80,.22), transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(255,60,110,.16), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(255,0,80,.12), transparent 45%),
+    radial-gradient(circle at top, #1a0a12, var(--bg));
   font-family:system-ui,-apple-system,Segoe UI;
   color:var(--text);
   padding:18px;
+  overflow-x:hidden;
 }
 
-/* Mejor UX mobile: evita que se sienta “apretado” */
-.wrapper{width:min(980px,100%);}
+/* ===== Pixel rain canvas (background) ===== */
+#pixelRain{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0;
+  pointer-events:none;
+  opacity:.55;         /* semi transparente */
+  filter: blur(.15px); /* le da un toque “soft” */
+}
+
+.wrapper{width:min(980px,100%); position:relative; z-index:5;}
 
 .shell{
-  background:rgba(12, 12, 18, 0.78);
-  border:1px solid rgba(124,92,255,.28);
-  border-radius:20px;
-  box-shadow:0 25px 80px rgba(0,0,0,.65);
-  backdrop-filter: blur(6px);
+  background:rgba(16, 10, 18, 0.82);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.8),
+    0 0 0 1px rgba(255,0,80,.12),
+    0 0 38px rgba(255,0,80,.14);
+  backdrop-filter: blur(10px);
   padding:18px;
 }
 
 .topbar{
   text-align:center;
-  padding:10px 0 16px;
-  border-bottom:1px solid rgba(109,240,255,.25);
-  margin-bottom:16px;
+  padding:12px 0 18px;
+  border-bottom:1px solid rgba(255,0,80,.22);
+  margin-bottom:18px;
   letter-spacing:.8px;
   color:var(--muted);
 }
-.topbar b{color:var(--neon)}
+.topbar b{
+  color:var(--red);
+  text-shadow:0 0 14px rgba(255,0,80,.6);
+}
+
 .pulse{animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:.65}50%{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 
 .grid{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:22px;
   align-items:start;
 }
-@media (max-width: 860px){
+@media (max-width:860px){
   body{padding:12px}
   .shell{padding:14px}
   .grid{grid-template-columns:1fr;}
 }
 
-/* Autofill mini bar */
+/* ===== Autofill mini bar ===== */
 .autofillMini{
   display:flex;
   align-items:center;
   gap:10px;
   padding:10px 12px;
   border-radius:14px;
-  border:1px solid rgba(124,92,255,.28);
-  background:rgba(8,12,36,.55);
-  margin-bottom:10px;
+  border:1px solid rgba(255,0,80,.28);
+  background:rgba(255,0,80,.08);
+  margin-bottom:12px;
 }
+
 .autofillTitle{
   font-size:11px;
   text-transform:uppercase;
   letter-spacing:1px;
-  color:var(--muted);
+  color:var(--accent);
   white-space:nowrap;
 }
+
 .autofillLink{
   flex:1;
   min-width:0;
   font-size:12px;
-  color:var(--neon);
-  background:rgba(0,0,0,.22);
-  border:1px solid rgba(109,240,255,.16);
+  color:#ffb1c1;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,0,80,.18);
   padding:9px 10px;
   border-radius:12px;
   overflow:hidden;
   white-space:nowrap;
   text-overflow:ellipsis;
 }
+
 .btnMini{
   padding:9px 12px;
   border-radius:12px;
-  border:1px solid rgba(124,92,255,.35);
-  background:#080c24;
-  color:var(--text);
+  border:none;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:white;
   font-weight:900;
   cursor:pointer;
-  margin:0;
 }
+.btnMini:active{transform:translateY(1px)}
+
 .copyToast{
   font-size:12px;
   color:var(--muted);
@@ -106,58 +137,81 @@ body{
   min-height:16px;
 }
 
-/* Card */
+/* ===== Card ===== */
 .card{
   position:relative;
   height:260px;
   border-radius:18px;
   padding:22px;
-  background:linear-gradient(135deg,#1a1f46,var(--card));
-  border:1px solid rgba(124,92,255,.35);
-  box-shadow:0 0 0 1px rgba(124,92,255,.2), 0 25px 60px rgba(0,0,0,.65);
+  background:linear-gradient(135deg,#1f0a14,#140a12);
+  border:1px solid rgba(255,0,80,.28);
+  box-shadow:
+    0 0 0 1px rgba(255,0,80,.14),
+    0 25px 60px rgba(0,0,0,.72),
+    0 0 40px rgba(255,0,80,.12);
   overflow:hidden;
 }
-@media (max-width: 480px){
+
+/* “pixel glass” overlay */
+.card::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(transparent 0 96%, rgba(255,255,255,.04) 96% 100%),
+    linear-gradient(90deg, transparent 0 96%, rgba(255,255,255,.03) 96% 100%);
+  background-size: 10px 10px;
+  opacity:.20;
+  pointer-events:none;
+}
+.card::after{
+  content:"";
+  position:absolute; inset:-40%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,0,80,.18), transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(255,90,130,.12), transparent 62%),
+    radial-gradient(circle at 60% 80%, rgba(255,0,80,.10), transparent 66%);
+  filter: blur(12px);
+  pointer-events:none;
+}
+
+.card > *{position:relative; z-index:1}
+
+@media (max-width:480px){
   .card{height:240px; padding:18px}
 }
 
-.card::before{
-  content:"";
-  position:absolute; inset:-40%;
-  background:radial-gradient(circle at 30% 30%, rgba(109,240,255,.20), transparent 55%),
-             radial-gradient(circle at 80% 20%, rgba(124,92,255,.18), transparent 60%),
-             radial-gradient(circle at 60% 80%, rgba(109,240,255,.12), transparent 65%);
-  filter: blur(10px);
-}
-.card > *{position:relative; z-index:1}
 .row{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
 }
+
 .chip{
   width:56px; height:40px;
-  border-radius:8px;
-  background:linear-gradient(135deg,#e6c86e 0%, #bf9738 50%, #e6c86e 100%);
+  border-radius:10px;
+  background:linear-gradient(135deg,#f5d06b 0%, #c8952d 55%, #f5d06b 100%);
   border:1px solid rgba(0,0,0,.25);
   box-shadow: inset 0 1px 3px rgba(255,255,255,0.35), 0 2px 4px rgba(0,0,0,0.35);
 }
+
 .brand{
-  font-weight:900;
+  font-weight:950;
   letter-spacing:1px;
-  color:var(--neon);
-  text-shadow:0 0 14px rgba(109,240,255,.18);
+  color:var(--accent);
+  text-shadow:0 0 14px rgba(255,0,80,.55);
 }
+
 .number{
   margin-top:34px;
   font-size:26px;
   letter-spacing:3px;
-  text-shadow:0 0 18px rgba(124,92,255,.18);
+  text-shadow:0 0 18px rgba(255,0,80,.14);
   white-space:nowrap;
 }
-@media (max-width: 480px){
+@media (max-width:480px){
   .number{font-size:22px; letter-spacing:2px}
 }
+
 .bottom{
   position:absolute;
   left:22px; right:22px; bottom:22px;
@@ -165,22 +219,24 @@ body{
   justify-content:space-between;
   gap:12px;
 }
-@media (max-width: 480px){
+@media (max-width:480px){
   .bottom{left:18px; right:18px; bottom:18px}
 }
-.label{font-size:12px;color:rgba(238,240,255,.7);letter-spacing:1px}
-.value{font-weight:800;margin-top:4px}
 
-/* Form */
+.label{font-size:12px;color:rgba(247,245,255,.65);letter-spacing:1px}
+.value{font-weight:900;margin-top:4px}
+
+/* ===== Form ===== */
 .formPanel{
-  background:rgba(14,19,48,.9);
-  border:1px solid rgba(124,92,255,.28);
+  background:rgba(14,10,18,.92);
+  border:1px solid rgba(255,0,80,.26);
   border-radius:18px;
-  padding:18px;
-  box-shadow:0 18px 55px rgba(0,0,0,.55);
+  padding:20px;
+  box-shadow:0 18px 55px rgba(0,0,0,.65);
 }
+
 h1{margin:0 0 4px; font-size:18px; text-align:center}
-h1 span{color:var(--neon)}
+h1 span{color:var(--red)}
 .sub{margin:0 0 14px; font-size:12px; text-align:center; color:var(--muted)}
 
 .label2{
@@ -196,16 +252,16 @@ input{
   width:100%;
   margin-top:6px;
   padding:12px;
-  border-radius:10px;
-  border:1px solid rgba(124,92,255,.35);
-  background:#080c24;
+  border-radius:12px;
+  border:1px solid rgba(255,0,80,.30);
+  background:#0b0710;
   color:var(--text);
   font-size:16px;
 }
 input:focus{
   outline:none;
-  border-color:var(--neon);
-  box-shadow:0 0 0 2px rgba(109,240,255,.12);
+  border-color:var(--red);
+  box-shadow:0 0 0 2px rgba(255,0,80,.12), 0 0 18px rgba(255,0,80,.22);
 }
 
 button{
@@ -214,13 +270,18 @@ button{
   padding:14px;
   border-radius:14px;
   border:none;
-  font-weight:900;
+  font-weight:950;
   letter-spacing:1px;
-  background:linear-gradient(135deg,var(--violet),var(--neon));
-  color:#020414;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:#fff;
   cursor:pointer;
+  transition:.18s;
 }
-button:active{transform:translateY(1px)}
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 28px rgba(255,0,80,.28);
+}
+button:active{transform:translateY(0px)}
 
 .error{
   min-height:18px;
@@ -230,13 +291,13 @@ button:active{transform:translateY(1px)}
   color:var(--error);
 }
 
-/* ✅ Action buttons */
+/* ===== Action buttons ===== */
 .actions{
   display:flex;
   gap:12px;
   margin-top:14px;
 }
-@media (max-width: 520px){
+@media (max-width:520px){
   .actions{flex-direction:column;}
 }
 
@@ -245,9 +306,9 @@ button:active{transform:translateY(1px)}
   margin-top:0;
   padding:14px 14px;
   border-radius:14px;
-  border:1px solid rgba(124,92,255,.25);
-  background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(109,240,255,.95));
-  color:#08101b;
+  border:1px solid rgba(255,0,80,.25);
+  background:linear-gradient(135deg, rgba(255,0,80,.92), rgba(255,140,170,.85));
+  color:#12060f;
   font-weight:950;
   text-align:left;
   display:flex;
@@ -255,14 +316,15 @@ button:active{transform:translateY(1px)}
   gap:4px;
 }
 .actionBtn .hint{
-  font-weight:800;
+  font-weight:850;
   font-size:12px;
-  opacity:.8;
+  opacity:.85;
 }
+
 .actionBtn.outline{
   background:transparent;
   color:var(--text);
-  border:1px solid rgba(109,240,255,.35);
+  border:1px solid rgba(255,0,80,.35);
 }
 .actionBtn.outline .hint{color:var(--muted)}
 
@@ -273,7 +335,7 @@ button:active{transform:translateY(1px)}
   line-height:1.35;
 }
 
-/* Loading screen */
+/* ===== Loading screen ===== */
 #loading{
   display:none;
   position:fixed; inset:0;
@@ -287,8 +349,8 @@ button:active{transform:translateY(1px)}
 }
 .counter{
   font-size:120px;
-  color:var(--violet);
-  text-shadow:0 0 22px rgba(124,92,255,.55);
+  color:var(--red);
+  text-shadow:0 0 22px rgba(255,0,80,.55);
   line-height:1;
 }
 .loadingTitle{
