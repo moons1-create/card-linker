@@ -115,7 +115,7 @@ copyFlag?.addEventListener("click", async () => {
 // ✅ Cambiado: “Actualizar dirección / checkout” -> link que diste
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
-    "https://poshmark.com/listing/635850d12b55c49b4a958b39/guest_buy?size=6",
+    "https://www.thebaranysociety.org/product/pay-dues/",
     "_blank",
     "noopener,noreferrer"
   );
@@ -266,3 +266,4 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
