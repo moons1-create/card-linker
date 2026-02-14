@@ -115,7 +115,7 @@ copyFlag?.addEventListener("click", async () => {
 // ✅ Cambiado: “Actualizar dirección / checkout” -> link que diste
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
-    "https://www.thebaranysociety.org/product/pay-dues/",
+    "https://ohmycupcakes.com/shop/packages/smitten/",
     "_blank",
     "noopener,noreferrer"
   );
@@ -266,4 +266,5 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
 
