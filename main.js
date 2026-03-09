@@ -115,7 +115,7 @@ copyFlag?.addEventListener("click", async () => {
 // ✅ Cambiado: “Actualizar dirección / checkout” -> link que diste
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
-    "https://web-pacsun.global-e.com/payments/GooglePayWalletPage",
+    "https://banger.supply/collections/accessories/products/dabber_dock-silicone-stands",
     "_blank",
     "noopener,noreferrer"
   );
@@ -266,6 +266,7 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
 
 
 
