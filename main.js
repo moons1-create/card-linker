@@ -112,7 +112,7 @@ copyFlag?.addEventListener("click", async () => {
 
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
-    "https://banger.supply/collections/accessories/products/dabber_dock-silicone-stands",
+    "https://banger.supply/collections/accessories/products/commander-glass-nipple-caps",
     "_blank",
     "noopener,noreferrer"
   );
@@ -263,6 +263,7 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
+
 
 
 
