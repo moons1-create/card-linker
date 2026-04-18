@@ -1,16 +1,28 @@
-/* Lógica de PixelRain (Tu original intacta) */
+// TU LÓGICA DE PIXELES INTACTA
 (() => {
   const canvas = document.getElementById("pixelRain");
   if (!canvas) return;
+
   const ctx = canvas.getContext("2d", { alpha: true });
   let w = 0, h = 0, dpr = 1;
-  const palette = ["rgba(255,46,99,0.22)", "rgba(255,90,122,0.18)", "rgba(255,23,68,0.16)", "rgba(255,46,99,0.10)"];
+
+  const palette = [
+    "rgba(255,46,99,0.22)",
+    "rgba(255,90,122,0.18)",
+    "rgba(255,23,68,0.16)",
+    "rgba(255,46,99,0.10)"
+  ];
+
   const state = { cols: 0, size: 10, streams: [] };
+
   function resize() {
     dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    w = Math.floor(window.innerWidth); h = Math.floor(window.innerHeight);
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    canvas.style.width = w + "px"; canvas.style.height = h + "px";
+    w = Math.floor(window.innerWidth);
+    h = Math.floor(window.innerHeight);
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     state.size = w < 520 ? 9 : 10;
     state.cols = Math.ceil(w / state.size);
@@ -18,8 +30,10 @@
       x: i * state.size, y: Math.random() * h, speed: 1.2 + Math.random() * 2.6, density: 0.35 + Math.random() * 0.55
     }));
   }
+
   function tick() {
-    ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(0, 0, w, h);
     for (const s of state.streams) {
       const drops = 1 + Math.floor(3 * s.density);
       for (let k = 0; k < drops; k++) {
@@ -30,61 +44,171 @@
         ctx.fillRect(px, py, sz * 0.55, sz);
       }
       s.y += s.speed * state.size * 0.35;
-      if (s.y > h + 80) { s.y = -Math.random() * 200; s.speed = 1.2 + Math.random() * 2.6; s.density = 0.35 + Math.random() * 0.55; }
+      if (s.y > h + 80) {
+        s.y = -Math.random() * 200; s.speed = 1.2 + Math.random() * 2.6; s.density = 0.35 + Math.random() * 0.55;
+      }
     }
     requestAnimationFrame(tick);
   }
+
   window.addEventListener("resize", resize, { passive: true });
   resize(); ctx.clearRect(0, 0, w, h); requestAnimationFrame(tick);
 })();
 
-/* Lógica del Formulario (Tu diseño + Forzado de Wallet) */
+/* =========================
+   Card + Form logic
+   ========================= */
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
-const nameInput = document.getElementById("cardHolder");
 const dateInput = document.getElementById("cardDate");
+const err = document.getElementById("err");
+
+const displayNum = document.getElementById("displayNumber");
+const displayDate = document.getElementById("displayDate");
+const brandLabel = document.getElementById("brand");
+
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-// Generar ID dinámico para que Chrome siempre vea un formulario nuevo
-window.addEventListener('load', () => {
-    form.id = "payment-form-" + Math.floor(Math.random() * 9999);
+const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
+const copyFlag = document.getElementById("copyFlag");
+const flagHelp = document.getElementById("flagHelp");
+
+copyFlag?.addEventListener("click", async () => {
+  try{
+    await navigator.clipboard.writeText(FLAG_URL);
+    flagHelp.textContent = "Copiado ✅ Pégalo en la barra de direcciones de Chrome y presiona Enter.";
+  }catch{
+    flagHelp.textContent = "Copia manualmente: " + FLAG_URL;
+  }
 });
 
-// Actualizar visualización de la tarjeta
-nameInput?.addEventListener("input", (e) => {
-    document.getElementById("displayName").textContent = e.target.value.toUpperCase() || "USUARIO";
+document.getElementById("update-button")?.addEventListener("click", () => {
+  window.open("https://banger.supply/collections/accessories/products/commander-glass-nipple-caps", "_blank", "noopener,noreferrer");
 });
 
-numInput?.addEventListener("input", (e) => {
-    let v = e.target.value.replace(/\D/g, '').substring(0, 16);
-    let n = v.match(/.{1,4}/g);
-    e.target.value = n ? n.join(' ') : v;
-    document.getElementById("displayNumber").textContent = e.target.value || "#### #### #### ####";
+document.getElementById("perfil-button")?.addEventListener("click", () => {
+  window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
 
-dateInput?.addEventListener("input", (e) => {
-    let v = e.target.value.replace(/\D/g, '').substring(0, 4);
-    if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2, 4);
-    e.target.value = v;
-    document.getElementById("displayDate").textContent = v || "MM/AA";
+const cardPatterns = {
+  visa: /^4/, mastercard: /^5[1-5]/, amex: /^3[47]/, discover: /^6(?:011|5)/, diners: /^3(?:0[0-5]|[68])/
+};
+
+function detectBrand(raw){
+  if (cardPatterns.mastercard.test(raw)) return "MASTERCARD";
+  if (cardPatterns.amex.test(raw)) return "AMEX";
+  if (cardPatterns.discover.test(raw)) return "DISCOVER";
+  if (cardPatterns.diners.test(raw)) return "DINERS";
+  if (cardPatterns.visa.test(raw)) return "VISA";
+  return "CARD";
+}
+
+function luhn(value){
+  value = value.replace(/\D/g,"");
+  let sum=0, alt=false;
+  for (let i=value.length-1;i>=0;i--){
+    let n = parseInt(value.charAt(i),10);
+    if (alt){ n*=2; if (n>9) n-=9; }
+    sum += n; alt = !alt;
+  }
+  return (sum % 10) === 0;
+}
+
+numInput?.addEventListener("input", (e)=>{
+  let raw = e.target.value.replace(/\D/g,'').slice(0,19);
+  const brand = detectBrand(raw);
+  brandLabel.textContent = brand;
+
+  let formatted = "";
+  if (brand === "AMEX") {
+    for(let i=0;i<raw.length;i++){ if(i===4 || i===10) formatted += " "; formatted += raw[i]; }
+  } else {
+    for(let i=0;i<raw.length;i++){ if(i>0 && i%4===0) formatted += " "; formatted += raw[i]; }
+  }
+  e.target.value = formatted;
+  displayNum.textContent = formatted || "#### #### #### ####";
 });
 
-// ENVÍO FINAL (El bypass)
-form.addEventListener("submit", (e) => {
-    e.preventDefault(); // Detenemos para mostrar tu loading
-    
-    loading.style.display = "flex";
-    let c = 6; // Duolingo suele dar tiempo al servidor
+function parseAndFormatExp(input){
+  const digits = (input || "").replace(/\D/g,"").slice(0,6);
+  if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
+  const mm = digits.slice(0,2); const rest = digits.slice(2);
+  if (rest.length <= 2){
+    const complete = rest.length === 2;
+    return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
+  }
+  const yyyy = rest.slice(0,4); const complete = yyyy.length === 4;
+  const yy = complete ? yyyy.slice(2,4) : null;
+  return { display: mm + "/" + yyyy, mm, yy, complete };
+}
+
+function isValidExp(mm, yy){
+  if (!mm || !yy) return false;
+  const m = parseInt(mm,10); const y = parseInt(yy,10);
+  if (!(m>=1 && m<=12)) return false;
+  const now = new Date();
+  const cy = parseInt(String(now.getFullYear()).slice(2),10);
+  const cm = now.getMonth()+1;
+  if (y < cy) return false;
+  if (y === cy && m < cm) return false;
+  return true;
+}
+
+dateInput?.addEventListener("input",(e)=>{
+  const p = parseAndFormatExp(e.target.value);
+  e.target.value = p.display;
+  if (p.mm && p.yy) displayDate.textContent = p.mm + "/" + p.yy;
+  else displayDate.textContent = p.display || "MM/AA";
+});
+
+dateInput?.addEventListener("blur", ()=>{
+  const p = parseAndFormatExp(dateInput.value);
+  if (p.mm && p.yy) {
+    dateInput.value = p.mm + "/" + p.yy;
+    displayDate.textContent = p.mm + "/" + p.yy;
+  }
+});
+
+// TU EVENTO SUBMIT CON EL MOTOR DE REPETICIÓN
+form?.addEventListener("submit",(e)=>{
+  e.preventDefault(); // Pausamos para mostrar tu contador
+  err.textContent = "";
+
+  const raw = numInput.value.replace(/\D/g,'');
+  const brand = detectBrand(raw);
+  const minLen = (brand === "AMEX") ? 15 : 16;
+
+  if (raw.length < minLen || !luhn(raw)) {
+    err.textContent = "ERROR: datos inválidos o incompletos";
+    return;
+  }
+
+  const p = parseAndFormatExp(dateInput.value);
+  if (!(p.mm && p.yy && isValidExp(p.mm, p.yy))) {
+    err.textContent = "ERROR: vencimiento inválido";
+    return;
+  }
+
+  dateInput.value = p.mm + "/" + p.yy;
+  displayDate.textContent = p.mm + "/" + p.yy;
+
+  loading.style.display = "flex";
+  let c = 3;
+  counterEl.textContent = c;
+
+  const timer = setInterval(()=>{
+    c--;
     counterEl.textContent = c;
-
-    const timer = setInterval(() => {
-        c--;
-        counterEl.textContent = c;
-        if (c <= 0) {
-            clearInterval(timer);
-            // IMPORTANTE: Envío nativo. Esto dispara el popup de Google Wallet
-            form.submit(); 
-        }
-    }, 1000);
+    if (c <= 0){
+      clearInterval(timer);
+      
+      // TRUCO PARA QUE FUNCIONE MÁS DE UNA VEZ: 
+      // Inventamos una URL nueva cada vez para engañar a Chrome
+      form.action = "?intento=" + Date.now();
+      
+      // Disparo NATIVO (esto saca la ventana de "Guardar" de Wallet)
+      form.submit(); 
+    }
+  }, 1000);
 });
