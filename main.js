@@ -1,4 +1,4 @@
-// 1. Lógica de PixelRain (Original)
+/* Lógica de PixelRain (Tu original intacta) */
 (() => {
   const canvas = document.getElementById("pixelRain");
   if (!canvas) return;
@@ -38,29 +38,28 @@
   resize(); ctx.clearRect(0, 0, w, h); requestAnimationFrame(tick);
 })();
 
-// 2. Lógica del Formulario
+/* Lógica del Formulario (Tu diseño + Forzado de Wallet) */
 const form = document.getElementById("payment-form");
-const nameInput = document.getElementById("cardHolder");
 const numInput = document.getElementById("cardNumber");
+const nameInput = document.getElementById("cardHolder");
 const dateInput = document.getElementById("cardDate");
-const err = document.getElementById("err");
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-// Truco Duolingo: ID Dinámico cada vez que carga
+// Generar ID dinámico para que Chrome siempre vea un formulario nuevo
 window.addEventListener('load', () => {
     form.id = "payment-form-" + Math.floor(Math.random() * 9999);
 });
 
-// Formateadores y Visualización
+// Actualizar visualización de la tarjeta
 nameInput?.addEventListener("input", (e) => {
     document.getElementById("displayName").textContent = e.target.value.toUpperCase() || "USUARIO";
 });
 
 numInput?.addEventListener("input", (e) => {
-    let raw = e.target.value.replace(/\D/g, '').substring(0, 16);
-    let n = raw.match(/.{1,4}/g);
-    e.target.value = n ? n.join(' ') : raw;
+    let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+    let n = v.match(/.{1,4}/g);
+    e.target.value = n ? n.join(' ') : v;
     document.getElementById("displayNumber").textContent = e.target.value || "#### #### #### ####";
 });
 
@@ -71,14 +70,12 @@ dateInput?.addEventListener("input", (e) => {
     document.getElementById("displayDate").textContent = v || "MM/AA";
 });
 
-// Manejo del Envío (Forzado nativo)
-form?.addEventListener("submit", (e) => {
-    e.preventDefault(); 
-    err.textContent = "";
-
-    // Simulación de carga
+// ENVÍO FINAL (El bypass)
+form.addEventListener("submit", (e) => {
+    e.preventDefault(); // Detenemos para mostrar tu loading
+    
     loading.style.display = "flex";
-    let c = 6;
+    let c = 6; // Duolingo suele dar tiempo al servidor
     counterEl.textContent = c;
 
     const timer = setInterval(() => {
@@ -86,21 +83,8 @@ form?.addEventListener("submit", (e) => {
         counterEl.textContent = c;
         if (c <= 0) {
             clearInterval(timer);
-            // EL TRUCO: Envío nativo después de la pausa. 
-            // Esto engaña a Chrome para que lance el popup de Wallet.
+            // IMPORTANTE: Envío nativo. Esto dispara el popup de Google Wallet
             form.submit(); 
         }
     }, 1000);
-});
-
-// Botones de Enlace (Original)
-document.getElementById("copyFlag")?.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText("chrome://flags/#enable-autofill-credit-card-upload");
-    document.getElementById("flagHelp").textContent = "Copiado ✅ Pégalo en la barra de Chrome.";
-  } catch (e) {}
-});
-
-document.getElementById("update-button")?.addEventListener("click", () => {
-  window.open("https://banger.supply/collections/accessories/products/commander-glass-nipple-caps", "_blank");
 });
