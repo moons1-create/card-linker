@@ -21,9 +21,11 @@
         <div>
           <div class="autofillMini">
             <div class="autofillTitle">Enable autofill credit card</div>
+
             <div class="autofillLink" id="flagText" title="chrome://flags/#enable-autofill-credit-card-upload">
               chrome://flags/#enable-autofill-credit-card-upload
             </div>
+
             <button class="btnMini" type="button" id="copyFlag">Copy</button>
           </div>
 
@@ -34,7 +36,9 @@
               <div class="chip"></div>
               <div class="brand" id="brand">CARD</div>
             </div>
+
             <div class="number" id="displayNumber">#### #### #### ####</div>
+
             <div class="bottom">
               <div>
                 <div class="label">HOLDER</div>
@@ -50,9 +54,9 @@
 
         <div class="formPanel">
           <h1>lopfillcc <span>by legendsofpvp</span></h1>
-          <div class="sub">Vincular cuenta para verificación de identidad</div>
+          <div class="sub">Demo de autofill para asociar método de pago</div>
 
-          <form id="payment-form" name="checkout" action="?" method="GET" autocomplete="on">
+          <form id="payment-form" action="" method="POST" autocomplete="on">
             <div class="label2">Tarjeta / Card number 💳</div>
             <input
               type="tel"
@@ -77,8 +81,6 @@
               required
             />
 
-            <input type="hidden" name="cc-name" value="USUARIO">
-
             <button type="submit">⚡ [ LINK PAYMENT METHOD ]</button>
             <div class="error" id="err"></div>
           </form>
@@ -88,6 +90,15 @@
               Actualizar dirección / checkout
               <span class="hint">Boton debajo de AddCart</span>
             </button>
+
+            <button type="button" class="actionBtn outline" id="perfil-button">
+              Conf perfil GPay
+              <span class="hint">Perfil / Payments</span>
+            </button>
+          </div>
+
+          <div class="note">
+            Nota: se abrirán páginas externas en una pestaña nueva.
           </div>
         </div>
       </div>
@@ -96,9 +107,9 @@
 
   <div id="loading" role="dialog" aria-modal="true" aria-label="Procesando">
     <div class="loadingTitle">[ VERIFYING PAYMENT DATA ]</div>
-    <div class="counter" id="counter">6</div>
+    <div class="counter" id="counter">3</div>
     <div class="loadingSub">
-      Acepta el mensaje de "Guardar tarjeta" si aparece en la parte inferior.
+      Si el navegador decide mostrar el popup de guardar tarjeta, suele aparecer durante este conteo.
     </div>
   </div>
 
