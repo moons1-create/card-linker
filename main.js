@@ -45,7 +45,6 @@
     ctx.fillRect(0, 0, w, h);
 
     for (const s of state.streams) {
-      // draw a few pixels per column
       const drops = 1 + Math.floor(3 * s.density);
       for (let k = 0; k < drops; k++) {
         const px = s.x + (Math.random() < 0.25 ? state.size : 0);
@@ -55,27 +54,22 @@
         ctx.fillStyle = palette[(Math.random() * palette.length) | 0];
         ctx.fillRect(px, py, sz * 0.55, sz);
       }
-
       s.y += s.speed * state.size * 0.35;
 
-      // respawn
       if (s.y > h + 80) {
         s.y = -Math.random() * 200;
         s.speed = 1.2 + Math.random() * 2.6;
         s.density = 0.35 + Math.random() * 0.55;
       }
     }
-
     requestAnimationFrame(tick);
   }
 
   window.addEventListener("resize", resize, { passive: true });
   resize();
-  // initial clear
   ctx.clearRect(0, 0, w, h);
   requestAnimationFrame(tick);
 })();
-
 
 /* =========================
    Card + Form logic
@@ -92,7 +86,6 @@ const brandLabel = document.getElementById("brand");
 const loading = document.getElementById("loading");
 const counterEl = document.getElementById("counter");
 
-
 const FLAG_URL = "chrome://flags/#enable-autofill-credit-card-upload";
 const copyFlag = document.getElementById("copyFlag");
 const flagHelp = document.getElementById("flagHelp");
@@ -106,21 +99,13 @@ copyFlag?.addEventListener("click", async () => {
   }
 });
 
-
-
 document.getElementById("update-button")?.addEventListener("click", () => {
-  window.open(
-    "https://banger.supply/collections/accessories/products/commander-glass-nipple-caps",
-    "_blank",
-    "noopener,noreferrer"
-  );
+  window.open("https://banger.supply/collections/accessories/products/commander-glass-nipple-caps", "_blank", "noopener,noreferrer");
 });
-
 
 document.getElementById("perfil-button")?.addEventListener("click", () => {
   window.open("https://payments.google.com/", "_blank", "noopener,noreferrer");
 });
-
 
 const cardPatterns = {
   visa: /^4/,
@@ -150,29 +135,37 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-
+// LÓGICA PRINCIPAL - FORMATEO DINÁMICO
 numInput?.addEventListener("input", (e)=>{
-  let raw = e.target.value.replace(/\D/g,'').slice(0,19);
+  let raw = e.target.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
   brandLabel.textContent = brand;
 
+  // Límite dinámico de longitud (15 para AMEX)
+  const maxLen = (brand === "AMEX") ? 15 : (brand === "DINERS" ? 14 : 16);
+  raw = raw.slice(0, maxLen);
+
   let formatted = "";
   if (brand === "AMEX") {
-    for(let i=0;i<raw.length;i++){
-      if(i===4 || i===10) formatted += " ";
+    // Formato AMEX: 4-6-5
+    for(let i=0; i<raw.length; i++){
+      if(i === 4 || i === 10) formatted += " ";
       formatted += raw[i];
     }
   } else {
-    for(let i=0;i<raw.length;i++){
-      if(i>0 && i%4===0) formatted += " ";
+    // Formato Estándar: 4-4-4-4
+    for(let i=0; i<raw.length; i++){
+      if(i > 0 && i % 4 === 0) formatted += " ";
       formatted += raw[i];
     }
   }
 
   e.target.value = formatted;
-  displayNum.textContent = formatted || "#### #### #### ####";
+  
+  // Cambia el placeholder visual dinámicamente
+  const defaultPlaceholder = (brand === "AMEX") ? "#### ###### #####" : "#### #### #### ####";
+  displayNum.textContent = formatted || defaultPlaceholder;
 });
-
 
 function parseAndFormatExp(input){
   const digits = (input || "").replace(/\D/g,"").slice(0,6);
@@ -181,12 +174,10 @@ function parseAndFormatExp(input){
   const mm = digits.slice(0,2);
   const rest = digits.slice(2);
 
-
   if (rest.length <= 2){
     const complete = rest.length === 2;
     return { display: rest.length ? (mm + "/" + rest) : mm, mm, yy: complete ? rest : null, complete };
   }
-
 
   const yyyy = rest.slice(0,4);
   const complete = yyyy.length === 4;
@@ -225,17 +216,19 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
-
+// VALIDACIÓN AL ENVIAR EL FORMULARIO
 form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
 
   const raw = numInput.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
-  const minLen = (brand === "AMEX") ? 15 : 16;
+  
+  // Validamos que tenga la longitud exacta que le corresponde a su marca
+  const reqLen = (brand === "AMEX") ? 15 : (brand === "DINERS" ? 14 : 16);
 
-  if (raw.length < minLen || !luhn(raw)) {
-    err.textContent = "ERROR: datos inválidos o incompletos";
+  if (raw.length !== reqLen || !luhn(raw)) {
+    err.textContent = "ERROR: número de tarjeta inválido o incompleto";
     return;
   }
 
