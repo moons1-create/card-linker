@@ -54,6 +54,7 @@
         ctx.fillStyle = palette[(Math.random() * palette.length) | 0];
         ctx.fillRect(px, py, sz * 0.55, sz);
       }
+
       s.y += s.speed * state.size * 0.35;
 
       if (s.y > h + 80) {
@@ -62,6 +63,7 @@
         s.density = 0.35 + Math.random() * 0.55;
       }
     }
+
     requestAnimationFrame(tick);
   }
 
@@ -100,7 +102,11 @@ copyFlag?.addEventListener("click", async () => {
 });
 
 document.getElementById("update-button")?.addEventListener("click", () => {
-  window.open("https://banger.supply/collections/accessories/products/commander-glass-nipple-caps", "_blank", "noopener,noreferrer");
+  window.open(
+    "https://banger.supply/collections/accessories/products/commander-glass-nipple-caps",
+    "_blank",
+    "noopener,noreferrer"
+  );
 });
 
 document.getElementById("perfil-button")?.addEventListener("click", () => {
@@ -135,36 +141,34 @@ function luhn(value){
   return (sum % 10) === 0;
 }
 
-// LÓGICA PRINCIPAL - FORMATEO DINÁMICO
 numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
+  
+  // PARCHE AMEX: Cortar exactamente en 15. El resto en 19.
+  if (brand === "AMEX") {
+      raw = raw.slice(0, 15);
+  } else {
+      raw = raw.slice(0, 19);
+  }
+  
   brandLabel.textContent = brand;
-
-  // Límite dinámico de longitud (15 para AMEX)
-  const maxLen = (brand === "AMEX") ? 15 : (brand === "DINERS" ? 14 : 16);
-  raw = raw.slice(0, maxLen);
 
   let formatted = "";
   if (brand === "AMEX") {
-    // Formato AMEX: 4-6-5
-    for(let i=0; i<raw.length; i++){
-      if(i === 4 || i === 10) formatted += " ";
+    for(let i=0;i<raw.length;i++){
+      if(i===4 || i===10) formatted += " ";
       formatted += raw[i];
     }
   } else {
-    // Formato Estándar: 4-4-4-4
-    for(let i=0; i<raw.length; i++){
-      if(i > 0 && i % 4 === 0) formatted += " ";
+    for(let i=0;i<raw.length;i++){
+      if(i>0 && i%4===0) formatted += " ";
       formatted += raw[i];
     }
   }
 
   e.target.value = formatted;
-  
-  // Cambia el placeholder visual dinámicamente
-  const defaultPlaceholder = (brand === "AMEX") ? "#### ###### #####" : "#### #### #### ####";
-  displayNum.textContent = formatted || defaultPlaceholder;
+  displayNum.textContent = formatted || "#### #### #### ####";
 });
 
 function parseAndFormatExp(input){
@@ -216,7 +220,6 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
-// VALIDACIÓN AL ENVIAR EL FORMULARIO
 form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
@@ -224,11 +227,17 @@ form?.addEventListener("submit",(e)=>{
   const raw = numInput.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
   
-  // Validamos que tenga la longitud exacta que le corresponde a su marca
-  const reqLen = (brand === "AMEX") ? 15 : (brand === "DINERS" ? 14 : 16);
+  // PARCHE AMEX: Validación estricta para evitar errores de algoritmo
+  if (brand === "AMEX" && raw.length !== 15) {
+    err.textContent = "ERROR: AMEX requiere 15 dígitos exactos";
+    return;
+  } else if (brand !== "AMEX" && raw.length < 16) {
+    err.textContent = "ERROR: datos inválidos o incompletos";
+    return;
+  }
 
-  if (raw.length !== reqLen || !luhn(raw)) {
-    err.textContent = "ERROR: número de tarjeta inválido o incompleto";
+  if (!luhn(raw)) {
+    err.textContent = "ERROR: número de tarjeta inválido";
     return;
   }
 
