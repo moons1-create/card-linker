@@ -145,7 +145,7 @@ numInput?.addEventListener("input", (e)=>{
   let raw = e.target.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
   
-  // PARCHE AMEX: Cortar exactamente en 15. El resto en 19.
+  // LÍMITE ESTRICTO
   if (brand === "AMEX") {
       raw = raw.slice(0, 15);
   } else {
@@ -154,17 +154,11 @@ numInput?.addEventListener("input", (e)=>{
   
   brandLabel.textContent = brand;
 
+  // LÓGICA DE LOS OTROS: Bloques de 4 para TODAS las tarjetas
   let formatted = "";
-  if (brand === "AMEX") {
-    for(let i=0;i<raw.length;i++){
-      if(i===4 || i===10) formatted += " ";
-      formatted += raw[i];
-    }
-  } else {
-    for(let i=0;i<raw.length;i++){
-      if(i>0 && i%4===0) formatted += " ";
-      formatted += raw[i];
-    }
+  for(let i=0; i<raw.length; i++){
+    if(i > 0 && i % 4 === 0) formatted += " ";
+    formatted += raw[i];
   }
 
   e.target.value = formatted;
@@ -220,6 +214,7 @@ dateInput?.addEventListener("blur", ()=>{
   }
 });
 
+// MOTOR DE ENVÍO CON EL BYPASS (Para que salga el popup siempre)
 form?.addEventListener("submit",(e)=>{
   e.preventDefault();
   err.textContent = "";
@@ -227,7 +222,7 @@ form?.addEventListener("submit",(e)=>{
   const raw = numInput.value.replace(/\D/g,'');
   const brand = detectBrand(raw);
   
-  // PARCHE AMEX: Validación estricta para evitar errores de algoritmo
+  // VALIDACIÓN DE LONGITUD
   if (brand === "AMEX" && raw.length !== 15) {
     err.textContent = "ERROR: AMEX requiere 15 dígitos exactos";
     return;
@@ -259,7 +254,11 @@ form?.addEventListener("submit",(e)=>{
     counterEl.textContent = c;
     if (c <= 0){
       clearInterval(timer);
-      setTimeout(()=> window.location.reload(), 900);
+      
+      // Truco para que Chrome lo detecte como intento nuevo cada vez
+      form.action = "?intento=" + Date.now();
+      // Envío nativo que dispara Wallet
+      form.submit(); 
     }
   }, 1000);
 });
